@@ -1,40 +1,25 @@
 import random
 import re
-from string import ascii_uppercase
-x = [[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "]]
-xcopy = [[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "]]
-indexing = [[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," "," "," "]]
 
 def shift(x,n):
     return x[n:] + x[:n]
 
-def randomize_screen(diff):
-    if diff == "easy" or diff == 'e':
-        difficulty = 5
-    elif diff == "medium" or diff == 'm':
-        difficulty = 6
-    elif diff == "hard" or diff == 'h':
-        difficulty = 7
-    elif diff == "quit" or diff == 'q':
-        return 1
-    else:
-        return 0
-
-    for p in range(0,len(x)):
-        for o in range(0,len(x)):
-            x[o][p] = " "
-            indexing[o][p] = " "
+def randomize_screen(difficulty, working_board, solved_board, writeable_cells):
+    for p in range(len(working_board)):
+        for o in range(len(working_board)):
+            working_board[o][p] = ' '
+            writeable_cells[o][p] = ' '
     
     b = [1,2,3,4,5,6,7,8,9]
     random.shuffle(b)
-    for y in range(0,len(x)):
-        x[0][y] = b[y]
+    for y in range(len(working_board)):
+        working_board[0][y] = b[y]
         
     p = 1
     c = shift(b,3)
     while True:
-        for y in range(0,len(x)):
-            x[p][y] = c[y]
+        for y in range(len(working_board)):
+            working_board[p][y] = c[y]
         p = p + 1
         if p == 9:
             break
@@ -43,16 +28,15 @@ def randomize_screen(diff):
         else:
             c = shift(c,3)
     
-    choice = random.getrandbits(1)
-    if choice == 1:
-        for y in range(0,len(x)):
-            c[y] = x[y][0]
+    if random.getrandbits(1) == 1:
+        for y in range(len(working_board)):
+            c[y] = working_board[y][0]
                 
         p = 1
         c = shift(c,3)
         while True:
-            for y in range(0,len(x)):
-                x[y][p] = c[y]
+            for y in range(len(working_board)):
+                working_board[y][p] = c[y]
             p = p + 1
             if p == 9:
                 break
@@ -60,15 +44,15 @@ def randomize_screen(diff):
                 c = shift(c,1)
             else:
                 c = shift(c,3)
-    elif choice == 0:
-        for y in range(0,len(x)):
-            c[y] = x[0][y]
+    else:
+        for y in range(len(working_board)):
+            c[y] = working_board[0][y]
             
         p = 1
         c = shift(c,3)
         while True:
-            for y in range(0,len(x)):
-                x[p][y] = c[y]
+            for y in range(len(working_board)):
+                working_board[p][y] = c[y]
             p = p + 1
             if p == 9:
                 break
@@ -77,148 +61,150 @@ def randomize_screen(diff):
             else:
                 c = shift(c,3)
     
-    for xcopycol in range(0,9):
-        for xcopyrow in range(0,9):
-            xcopy[xcopyrow][xcopycol] = x[xcopyrow][xcopycol]
+    for solved_boardcol in range(9):
+        for solved_boardrow in range(9):
+            solved_board[solved_boardrow][solved_boardcol] = \
+                working_board[solved_boardrow][solved_boardcol]
     
     p = 0
     while True:
         if p == 9:
             break
         random.shuffle(b)
-        for i in range(0,difficulty):
+        for i in range(difficulty):
             index = b[i] - 1
-            x[p][index] = " "
-            indexing[p][index] = 1
+            working_board[p][index] = ' '
+            writeable_cells[p][index] = 1
         p = p + 1
-    
-    return 2
 
-def print_screen(y):
-    print("\n    A   B   C   D   E   F   G   H   I")
-    for i in range(1,10):
-        print("%d   %s   %s   %s - %s   %s   %s - %s   %s   %s" % (i, y[i-1][0], y[i-1][1], y[i-1][2], y[i-1][3], y[i-1][4], y[i-1][5], y[i-1][6], y[i-1][7], y[i-1][8]))
-        if i == 3 or i == 6:
-            print("   --- --- --- --- --- --- --- --- ---")
+def print_screen(board):
+    print('\n    A   B   C   D   E   F   G   H   I\n')
+    for i, row in enumerate(board):
+        print(f'{i+1}   {row[0]}   {row[1]}   {row[2]} | '\
+                      f'{row[3]}   {row[4]}   {row[5]} | '\
+                      f'{row[6]}   {row[7]}   {row[8]}')
+        if i == 2 or i == 5:
+            print('   --- --- --- --- --- --- --- --- ---')
+    print()
 
-def parseinput(inputstring, helpmessage):
+def parse_input(input):
     cell = ()
-    number = 0
-    message = "\nInvalid input. " + helpmessage
+    num = None
+    message = 'Invalid input. Type the column, row, and a space followed by '\
+              'the number desired. (ex. A2 9) \n'
 
-    pattern = r'([A-I])([0-9]+)( )([0-9]+)'
-    validinput = re.match(pattern, inputstring)
+    valid_input = re.match(r'([A-I])([1-9])\s+([1-9])\s*$', input.upper())
 
-    if validinput:
-        rowno = int(validinput.group(2)) - 1
-        colno = ascii_uppercase.index(validinput.group(1))
-        number = int(validinput.group(4))
+    if valid_input:
+        cell = (int(valid_input[2]) - 1, ord(valid_input[1]) - 65)
+        num = int(valid_input[3])
         message = ''
 
-        if -1 < rowno < 9:
-            cell = (rowno, colno)
+    return {'cell': cell, 'number': num, 'message': message}
 
-    return {'cell': cell, 'number': number, 'message': message}
-
-def confirm():
-    try:
-        wrong = 0
-        answer = 0
-        for rows in range(0,9):
-            answer = 0
-            for columns in range(0,9):
-                answer = answer + x[rows][columns]
-            if answer != 45:
-                wrong = 1
-                return wrong
+def confirm_board(board):
+    for row in board:
+        contents = {}
+        for value in row:
+            if contents.get(value, 0) > 0:
+                return False
+            contents[value] = 1
+    
+    for column in range(9):
+        contents = {}
+        for row in range(9):
+            if contents.get(board[row][column], 0) > 0:
+                return False
+            contents[board[row][column]] = 1
+        
+    for vertical_box in (0,3,6):
+        for horizontal_box in (0,3,6):
+            contents = {}
+            for u in range(3):
+                for v in range(3):
+                    if contents.get(board[vertical_box+u][horizontal_box+v], 0) > 0:
+                        return False
+                    contents[board[vertical_box+u][horizontal_box+v]] = 1
             
-        for columns in range(0,9):
-            answer = 0
-            for rows in range(0,9):
-                answer = answer + x[rows][columns]
-            if answer != 45:
-                wrong = 1
-                return wrong
-            
-        for boxes in (0,3,6):
-            for boxes2 in (0,3,6):
-                answer = 0
-                for u in range(0,3):
-                    for v in range(0,3):
-                        answer = answer + x[boxes+u][boxes2+v]
-                if answer != 45:
-                    wrong = 1
-                    return wrong
-                
-        return wrong
-    except:
-        wrong = 1
-        return wrong
+    return True
 
 def play_sudoku():
+    working_board   = [[' ' for _ in range(9)] for _ in range(9)]
+    solved_board    = [[' ' for _ in range(9)] for _ in range(9)]
+    writeable_cells = [[' ' for _ in range(9)] for _ in range(9)]
+
     difficulty = input('\nPlease choose a difficulty (easy, medium, hard):')
-    good = randomize_screen(difficulty)
-    if good == 0:
-        print("\nInvalid difficulty. Please re-enter difficulty (type quit to quit).")
+    if difficulty == 'easy' or difficulty == 'e':
+        difficulty = 5
+    elif difficulty == 'medium' or difficulty == 'm':
+        difficulty = 6
+    elif difficulty == 'hard' or difficulty == 'h':
+        difficulty = 7
+    elif difficulty == 'quit' or difficulty == 'q':
+        print('\nThanks for Playing!')
+        return
+    else:
+        print("\nInvalid difficulty. Please re-enter difficulty (type 'quit' to quit).")
         play_sudoku()
         return
-    elif good == 1:
-        print("\nThanks for Playing!")
-        return
+
+    randomize_screen(difficulty, working_board, solved_board, writeable_cells)
     
-    helpmessage = "\nType 'done' to calculate board. Type 'reset' to reset and 'quit' to quit the game. Type 'help' to show this message again.\n"
+    print_screen(working_board)
+
+    helpmessage = "Type 'done'  to calculate board.\nType 'reset' to reset.\nType "\
+                  "'quit'  to quit the game.\nType 'help'  to show this message again.\n"
+    print('Type the column, row, and a space followed by the number desired. '\
+          '(ex. A2 9)\n' + helpmessage)
     
-    print_screen(x)
-    
-    print("Type the column, row, and a space followed by the number desired. (ex. A2 9)" + helpmessage)
     while True:
         prompt = input('Input cell index and number desired (ex. A2 9):')
-        if prompt == "quit":
-            print("\nThanks for playing!")
+        if prompt == 'quit' or prompt == 'q':
+            print('\nThanks for playing!')
             break
-        elif prompt == "help":
-            print_screen(x)
+        elif prompt == 'help' or prompt == 'h':
+            print_screen(working_board)
             print(helpmessage)
             continue
-        elif prompt == "backdoor":
-            print_screen(xcopy)
-            print("\nBackdoor solution verified")
-            break
-        elif prompt == "reset":
+        elif prompt == 'backdoor':
+            print_screen(solved_board)
+            print('Solution displayed.')
+            print_screen(working_board)
+            continue
+        elif prompt == 'reset' or prompt == 'r':
             play_sudoku()
             break
-        elif prompt == "done":
-           wrong = confirm()
-           if wrong == 1:
-               print("\nPuzzle Not Correct! Try Again.\n")
-           elif wrong == 0:
-               print("\nCongratulations! The Puzzle is Correct!\n")
+        elif prompt == 'done' or prompt == 'd':
+           if not confirm_board(working_board):
+                print('\nPuzzle Not Correct! Try Again.')
+                print_screen(working_board)
+                continue
+           else:
+               print('\nCongratulations! The Puzzle is Correct!\n')
                again = input("Play Again? ('yes' to play again):")
-               if again == "yes":
+               if again == 'yes' or again == 'y':
                    play_sudoku()
                    break
-               print("\nThanks for Playing!")
+               print('\nThanks for Playing!')
                break
-           print_screen(x)
-           continue
         
-        result = parseinput(prompt, "Type the column, row, and a space followed by the number desired. (ex. A2 9) \n")
+        result = parse_input(prompt)
         cell = result['cell']
         number = result['number']
         message = result['message']
         if cell and number:
             rowno, colno = cell
-            
-            if indexing[rowno][colno] != 1:
+            if writeable_cells[rowno][colno] != 1:
                 print("\nCan't change initial number. Try Again.")
-                print_screen(x)
+                print_screen(working_board)
                 continue
             
-            print('\n\n')
-            x[rowno][colno] = number
+            working_board[rowno][colno] = number
         
-        print_screen(x)
-        if message != "":
+        print_screen(working_board)
+        
+        if message != '':
             print(message)
-        
-play_sudoku()
+
+if __name__ == '__main__':
+    play_sudoku()
