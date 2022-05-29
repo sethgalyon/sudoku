@@ -103,29 +103,23 @@ def parse_input(input):
     return {'cell': cell, 'number': num, 'message': message}
 
 def confirm_board(board):
-    for row in board:
-        contents = {}
-        for value in row:
-            if contents.get(value, 0) > 0:
-                return False
-            contents[value] = 1
+    rows = {i: [] for i in range(len(board))}
+    columns = {i: [] for i in range(len(board))}
+    boxes = {i: [] for i in range(len(board))}
     
-    for column in range(9):
-        contents = {}
-        for row in range(9):
-            if contents.get(board[row][column], 0) > 0:
+    for row in range(len(board)):
+        for column in range(len(board)):
+            if board[row][column] == '.':
+                continue
+            elif board[row][column] in rows[row] or \
+                board[row][column] in columns[column] or \
+                board[row][column] in boxes[row // 3 + (column // 3) * 3]:
                 return False
-            contents[board[row][column]] = 1
-        
-    for vertical_box in (0,3,6):
-        for horizontal_box in (0,3,6):
-            contents = {}
-            for u in range(3):
-                for v in range(3):
-                    if contents.get(board[vertical_box+u][horizontal_box+v], 0) > 0:
-                        return False
-                    contents[board[vertical_box+u][horizontal_box+v]] = 1
-            
+            else:
+                rows[row].append(board[row][column])
+                columns[column].append(board[row][column])
+                boxes[row // 3 + (column // 3) * 3].append(board[row][column])
+    
     return True
 
 def play_sudoku():
