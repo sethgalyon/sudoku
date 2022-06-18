@@ -20,13 +20,12 @@ def valid_num(board, row, col, num):
     return True
 
 
-def find_empty_cell(board):
-    for i in range(9):
-        for j in range(9):
-            if board[i][j] == 0:
-                return (i,j)
+def empty_cell_exists(board):
+    for row in board:
+        if 0 in row:
+            return True
 
-    return
+    return False
 
 
 def generate_board(board):
@@ -39,7 +38,7 @@ def generate_board(board):
             for num in nums:
                 if valid_num(board, row, col, num):
                     board[row][col] = num
-                    if not find_empty_cell(board):
+                    if not empty_cell_exists(board):
                         return True
                     elif generate_board(board):
                         return True
