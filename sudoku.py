@@ -110,7 +110,7 @@ def play_sudoku():
     board = [[0 for _ in range(9)] for _ in range(9)]
     writeable_cells = [[0 for _ in range(9)] for _ in range(9)]
 
-    difficulty = input('\nPlease choose a difficulty (easy, medium, hard):')
+    difficulty = input('\nPlease choose a difficulty (easy, medium, hard): ').strip()
     if difficulty == 'easy' or difficulty == 'e':
         difficulty = 5
     elif difficulty == 'medium' or difficulty == 'm':
@@ -137,7 +137,7 @@ def play_sudoku():
           '(ex. A2 9)\n' + helpmessage)
     
     while True:
-        prompt = input('Input cell index and number desired (ex. A2 9):')
+        prompt = input('Input cell index and number desired (ex. A2 9): ').strip()
         if prompt == 'quit' or prompt == 'q':
             print('\nThanks for playing!\n')
             break
@@ -155,7 +155,7 @@ def play_sudoku():
                 continue
            else:
                 print('\nCongratulations! The Puzzle is Correct!\n')
-                prompt = input("Play Again? ('yes' to play again):")
+                prompt = input("Play Again? ('yes' to play again): ").strip()
                 if prompt == 'yes' or prompt == 'y':
                     play_sudoku()
                     break
